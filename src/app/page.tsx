@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { MapPin, Calendar, Search, Shield, Clock, CreditCard, ChevronRight, Star, HelpCircle } from "lucide-react"
+import { MapPin, Calendar, Search, Shield, Clock, CreditCard, ChevronRight, Star, HelpCircle, Ticket, Bus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
