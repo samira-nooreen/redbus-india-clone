@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils"
 import { Footer } from "@/components/Footer"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
+import { StationAutocomplete } from "@/components/StationAutocomplete"
+
 export default function Home() {
   const router = useRouter()
   const [source, setSource] = useState("")
@@ -104,15 +106,11 @@ export default function Home() {
                 <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-stretch">
                   {/* From Field */}
                   <div className="relative flex-1 group">
-                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-red-600 transition-colors z-10">
-                      <MapPin className="h-5 w-5" />
-                    </div>
-                    <Input 
-                      placeholder="From Station" 
-                      className="h-20 border-none pl-14 text-xl font-bold focus-visible:ring-0 placeholder:text-zinc-400 bg-transparent rounded-t-2xl md:rounded-l-[1.75rem] md:rounded-tr-none"
+                    <StationAutocomplete 
+                      placeholder="From Station"
                       value={source}
-                      onChange={(e) => setSource(e.target.value)}
-                      required
+                      onChange={setSource}
+                      className="rounded-t-2xl md:rounded-l-[1.75rem] md:rounded-tr-none"
                     />
                     <div className="absolute bottom-0 left-14 right-6 h-px bg-zinc-100 md:hidden" />
                   </div>
@@ -121,15 +119,10 @@ export default function Home() {
                   
                   {/* To Field */}
                   <div className="relative flex-1 group">
-                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-red-600 transition-colors z-10">
-                      <MapPin className="h-5 w-5" />
-                    </div>
-                    <Input 
-                      placeholder="To Station" 
-                      className="h-20 border-none pl-14 text-xl font-bold focus-visible:ring-0 placeholder:text-zinc-400 bg-transparent"
+                    <StationAutocomplete 
+                      placeholder="To Station"
                       value={destination}
-                      onChange={(e) => setDestination(e.target.value)}
-                      required
+                      onChange={setDestination}
                     />
                     <div className="absolute bottom-0 left-14 right-6 h-px bg-zinc-100 md:hidden" />
                   </div>
