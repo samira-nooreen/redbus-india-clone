@@ -33,13 +33,8 @@ export default function RootLayout({
         <main className="flex-1">
           {children}
         </main>
-        <VisualEditsMessenger />
-        <footer className="border-t py-8 bg-zinc-50 dark:bg-zinc-900">
-          <div className="container mx-auto px-4 text-center text-zinc-500">
-            <p>© 2025 RedBus Clone. All rights reserved.</p>
-          </div>
-        </footer>
-      </body>
-    </html>
-  );
-}
+          <VisualEditsMessenger />
+        </body>
+      </html>
+    );
+  }
