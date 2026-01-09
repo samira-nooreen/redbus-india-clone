@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase"
 
 interface SeatSelectionProps {
   busId: string
@@ -17,9 +18,34 @@ interface SeatSelectionProps {
 export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) {
   const router = useRouter()
   const [selectedSeats, setSelectedSeats] = useState<string[]>([])
+  const [reservedSeats, setReservedSeats] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
   
-  // Dummy reserved seats
-  const reservedSeats = ["A1", "B2", "C3", "D4"]
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function fetchReservedSeats() {
+      if (!busId || !travelDate) {
+        setLoading(false)
+        return
+      }
+
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("seat_numbers")
+        .eq("bus_id", busId)
+        .eq("booking_date", travelDate)
+        .eq("status", "confirmed")
+
+      if (data) {
+        const booked = data.flatMap(booking => booking.seat_numbers)
+        setReservedSeats(booked)
+      }
+      setLoading(false)
+    }
+
+    fetchReservedSeats()
+  }, [busId, travelDate])
   
   const toggleSeat = (seatId: string) => {
     if (reservedSeats.includes(seatId)) return
