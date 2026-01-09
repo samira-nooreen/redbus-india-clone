@@ -197,18 +197,18 @@ function SearchResults() {
                     </CardContent>
                   </Card>
                   
-                  <AnimatePresence>
-                    {selectedBusId === bus.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <SeatSelection busId={bus.id} price={bus.price} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                    <AnimatePresence>
+                      {selectedBusId === bus.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <SeatSelection busId={bus.id} price={bus.price} travelDate={date} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                 </div>
               ))
             )}
