@@ -1,10 +1,16 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { MapPin, Loader2 } from "lucide-react"
+import { MapPin, Loader2, Bus, MapPinned, Building2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase"
+
+interface Station {
+  name: string
+  city?: string
+  type: 'boarding_point' | 'city'
+}
 
 interface StationAutocompleteProps {
   placeholder: string
@@ -19,14 +25,29 @@ export function StationAutocomplete({
   value,
   onChange,
   className,
-  icon = <MapPin className="h-5 w-5" />
+  icon = <Bus className="h-5 w-5" />
 }: StationAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<string[]>([])
-  const [allStations, setAllStations] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<Station[]>([])
+  const [allStations, setAllStations] = useState<Station[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
+
+  // Mock popular data as seen in the image
+  const popularBoardingPoints: Station[] = [
+    { name: "Kukatpally", city: "Hyderabad", type: 'boarding_point' },
+    { name: "Lakdikapul", city: "Hyderabad", type: 'boarding_point' },
+    { name: "Miyapur", city: "Hyderabad", type: 'boarding_point' },
+    { name: "Central Bus Station (CBS)", city: "Hyderabad", type: 'boarding_point' },
+  ]
+
+  const popularCities: Station[] = [
+    { name: "Hyderabad", type: 'city' },
+    { name: "Guntur (Andhra Pradesh)", type: 'city' },
+    { name: "Bangalore", type: 'city' },
+    { name: "Chennai", type: 'city' },
+  ]
 
   useEffect(() => {
     const fetchStations = async () => {
@@ -38,17 +59,22 @@ export function StationAutocomplete({
 
         if (error) throw error
 
-        const stations = new Set<string>()
+        const cities = new Set<string>()
         data.forEach(bus => {
-          if (bus.source) stations.add(bus.source)
-          if (bus.destination) stations.add(bus.destination)
+          if (bus.source) cities.add(bus.source)
+          if (bus.destination) cities.add(bus.destination)
         })
         
-        // Add some default trending stations if DB is empty for demo
-        const defaultStations = ["Bangalore", "Chennai", "Hyderabad", "Mumbai", "Pune", "Delhi", "Chandigarh", "Kochi", "Coimbatore"]
-        defaultStations.forEach(s => stations.add(s))
+        // Add defaults if DB is empty
+        const defaultCities = ["Mumbai", "Pune", "Delhi", "Chandigarh", "Kochi", "Coimbatore"]
+        defaultCities.forEach(s => cities.add(s))
 
-        setAllStations(Array.from(stations).sort())
+        const formattedStations: Station[] = [
+          ...Array.from(cities).map(city => ({ name: city, type: 'city' as const })),
+          ...popularBoardingPoints
+        ]
+
+        setAllStations(formattedStations)
       } catch (err) {
         console.error("Error fetching stations:", err)
       } finally {
@@ -62,13 +88,13 @@ export function StationAutocomplete({
   useEffect(() => {
     if (value.trim().length > 0) {
       const filtered = allStations.filter(station =>
-        station.toLowerCase().includes(value.toLowerCase())
+        station.name.toLowerCase().includes(value.toLowerCase()) ||
+        station.city?.toLowerCase().includes(value.toLowerCase())
       )
-      setSuggestions(filtered.slice(0, 5))
-      setIsOpen(filtered.length > 0)
+      setSuggestions(filtered.slice(0, 8))
+      setIsOpen(true)
     } else {
       setSuggestions([])
-      setIsOpen(false)
     }
   }, [value, allStations])
 
@@ -82,40 +108,106 @@ export function StationAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  const displaySuggestions = value.trim().length === 0 ? 
+    [...popularBoardingPoints.slice(0, 4), ...popularCities.slice(0, 2)] : 
+    suggestions
+
   return (
     <div className={cn("relative w-full", className)} ref={containerRef}>
-      <div className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-red-600 transition-colors z-10">
+      <div className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 transition-colors z-10">
         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : icon}
       </div>
-      <Input
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => value.trim().length > 0 && setIsOpen(true)}
-        className="h-20 border-none pl-14 text-xl font-bold focus-visible:ring-0 placeholder:text-zinc-400 bg-transparent w-full"
-      />
+      <div className="relative h-20 w-full group">
+        <label className="absolute left-14 top-4 text-[10px] font-bold text-zinc-400 uppercase tracking-wider opacity-0 group-focus-within:opacity-100 transition-opacity">
+          {placeholder.split(' ')[0]}
+        </label>
+        <Input
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setIsOpen(true)}
+          className="h-full border-none pl-14 pt-2 text-xl font-bold focus-visible:ring-0 placeholder:text-zinc-400 bg-transparent w-full"
+        />
+      </div>
       
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-2xl animate-in fade-in zoom-in duration-200">
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={index}
-              type="button"
-              className="flex w-full items-center gap-3 px-6 py-4 text-left hover:bg-red-50 transition-colors group/item"
-              onClick={() => {
-                onChange(suggestion)
-                setIsOpen(false)
-              }}
-            >
-              <div className="rounded-lg bg-zinc-50 p-2 group-hover/item:bg-red-100 transition-colors">
-                <MapPin className="h-4 w-4 text-zinc-400 group-hover/item:text-red-600" />
+        <div className="absolute top-[105%] left-0 right-0 z-[100] overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-in fade-in slide-in-from-top-2 duration-200 min-w-[320px]">
+          
+          {value.trim().length === 0 ? (
+            <div className="py-2">
+              <div className="px-6 py-4">
+                <h4 className="text-sm font-black text-zinc-900 mb-1">Popular Boarding Points near you</h4>
               </div>
-              <div>
-                <div className="font-bold text-zinc-900">{suggestion}</div>
-                <div className="text-xs text-zinc-400 font-medium">Popular Station</div>
+              <div className="divide-y divide-zinc-50">
+                {popularBoardingPoints.map((point, idx) => (
+                  <button
+                    key={`bp-${idx}`}
+                    type="button"
+                    className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-zinc-50 transition-colors group/item"
+                    onClick={() => {
+                      onChange(point.name)
+                      setIsOpen(false)
+                    }}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-bold text-[15px] text-zinc-900">{point.name}</span>
+                      <span className="text-[13px] text-zinc-400 font-medium">{point.city}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight opacity-0 group-hover/item:opacity-100 transition-opacity">Board at</span>
+                  </button>
+                ))}
               </div>
-            </button>
-          ))}
+
+              <div className="px-6 py-4 mt-2 border-t border-zinc-50">
+                <h4 className="text-sm font-black text-zinc-900 mb-1">Popular Cities near you</h4>
+              </div>
+              <div className="divide-y divide-zinc-50">
+                {popularCities.map((city, idx) => (
+                  <button
+                    key={`city-${idx}`}
+                    type="button"
+                    className="flex w-full items-center px-6 py-4 text-left hover:bg-zinc-50 transition-colors"
+                    onClick={() => {
+                      onChange(city.name)
+                      setIsOpen(false)
+                    }}
+                  >
+                    <span className="font-bold text-[15px] text-zinc-900">{city.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="divide-y divide-zinc-50 py-2">
+              {suggestions.length > 0 ? (
+                suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-zinc-50 transition-colors group/item"
+                    onClick={() => {
+                      onChange(suggestion.name)
+                      setIsOpen(false)
+                    }}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-bold text-[15px] text-zinc-900">{suggestion.name}</span>
+                      {suggestion.city && (
+                        <span className="text-[13px] text-zinc-400 font-medium">{suggestion.city}</span>
+                      )}
+                    </div>
+                    {suggestion.type === 'boarding_point' && (
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight">Boarding Point</span>
+                    )}
+                  </button>
+                ))
+              ) : (
+                <div className="px-6 py-8 text-center text-zinc-500 font-medium">
+                  No stations found for "{value}"
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
