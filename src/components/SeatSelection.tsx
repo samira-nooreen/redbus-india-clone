@@ -8,14 +8,26 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase"
+import { Separator } from "@/components/ui/separator"
+import { format, addHours } from "date-fns"
+
+interface Bus {
+  id: string
+  name: string
+  type: string
+  price: number
+  source: string
+  destination: string
+  departure_time: string
+  arrival_time: string
+}
 
 interface SeatSelectionProps {
-  busId: string
-  price: number
+  bus: Bus
   travelDate: string | null
 }
 
-export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) {
+export function SeatSelection({ bus, travelDate }: SeatSelectionProps) {
   const router = useRouter()
   const [selectedSeats, setSelectedSeats] = useState<string[]>([])
   const [reservedSeats, setReservedSeats] = useState<string[]>([])
@@ -25,7 +37,7 @@ export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) 
 
   useEffect(() => {
     async function fetchReservedSeats() {
-      if (!busId || !travelDate) {
+      if (!bus.id || !travelDate) {
         setLoading(false)
         return
       }
@@ -33,7 +45,7 @@ export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) 
       const { data, error } = await supabase
         .from("bookings")
         .select("seat_numbers")
-        .eq("bus_id", busId)
+        .eq("bus_id", bus.id)
         .eq("booking_date", travelDate)
         .eq("status", "confirmed")
 
@@ -45,7 +57,7 @@ export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) 
     }
 
     fetchReservedSeats()
-  }, [busId, travelDate])
+  }, [bus.id, travelDate])
   
   const toggleSeat = (seatId: string) => {
     if (reservedSeats.includes(seatId)) return
@@ -60,9 +72,9 @@ export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) 
   const handleContinue = () => {
     if (selectedSeats.length === 0) return
     const params = new URLSearchParams({
-      busId,
+      busId: bus.id,
       seats: selectedSeats.join(","),
-      total: (selectedSeats.length * price).toString(),
+      total: (selectedSeats.length * bus.price).toString(),
       date: travelDate || ""
     })
     router.push(`/checkout?${params.toString()}`)
@@ -70,6 +82,8 @@ export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) 
 
   const rows = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
   const cols = [1, 2, 3, 4]
+
+  const displayDate = travelDate ? new Date(travelDate) : new Date()
 
   return (
     <Card className="mt-2 border-t-4 border-t-red-600 bg-zinc-50 dark:bg-zinc-900/50">
@@ -168,15 +182,15 @@ export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) 
                   <div className="flex items-start gap-3">
                     <div className="mt-1 h-2 w-2 rounded-full bg-green-500" />
                     <div>
-                      <p className="font-bold">Bangalore (Majestic)</p>
-                      <p className="text-sm text-zinc-500">21:00, 15 Feb</p>
+                      <p className="font-bold">{bus.source}</p>
+                      <p className="text-sm text-zinc-500">{format(new Date(bus.departure_time), "HH:mm, dd MMM")}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-1 h-2 w-2 rounded-full bg-red-500" />
                     <div>
-                      <p className="font-bold">Mumbai (Borivali)</p>
-                      <p className="text-sm text-zinc-500">10:00, 16 Feb</p>
+                      <p className="font-bold">{bus.destination}</p>
+                      <p className="text-sm text-zinc-500">{format(new Date(bus.arrival_time), "HH:mm, dd MMM")}</p>
                     </div>
                   </div>
                 </div>
@@ -197,7 +211,7 @@ export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) 
                     </div>
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total Amount</span>
-                      <span className="text-red-600">₹{selectedSeats.length * price}</span>
+                      <span className="text-red-600">₹{selectedSeats.length * bus.price}</span>
                     </div>
                   </div>
                 ) : (
