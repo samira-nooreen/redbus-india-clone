@@ -210,14 +210,15 @@ function SearchResults() {
                   
                     <AnimatePresence>
                       {selectedBusId === bus.id && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <SeatSelection busId={bus.id} price={bus.price} travelDate={date} />
-                        </motion.div>
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <SeatSelection bus={bus} travelDate={date} />
+                          </motion.div>
+
                       )}
                     </AnimatePresence>
                 </div>
