@@ -44,14 +44,30 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md dark:bg-black/80">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="rounded-lg bg-red-600 p-1.5 shadow-lg shadow-red-200">
-            <Bus className="h-6 w-6 text-white" />
+          <Link href="/" className="flex items-center gap-2">
+            <div className="rounded-lg bg-red-600 p-1.5 shadow-lg shadow-red-200">
+              <Bus className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-red-600">RedBus</span>
+          </Link>
+
+          <div className="hidden items-center gap-8 lg:flex ml-8">
+            <Link href="/" className="flex flex-col items-center gap-1 group">
+              <div className="p-2 rounded-lg bg-red-50 group-hover:bg-red-100 transition-colors">
+                <Bus className="h-5 w-5 text-red-600" />
+              </div>
+              <span className="text-xs font-bold text-zinc-900">Bus Tickets</span>
+            </Link>
+            <Link href="#" className="flex flex-col items-center gap-1 group opacity-60 hover:opacity-100 transition-opacity">
+              <div className="p-2 rounded-lg bg-zinc-100 group-hover:bg-zinc-200 transition-colors">
+                <Ticket className="h-5 w-5 text-zinc-600" />
+              </div>
+              <span className="text-xs font-bold text-zinc-900">Train Tickets</span>
+            </Link>
           </div>
-          <span className="text-xl font-bold tracking-tight text-red-600">RedBus</span>
-        </Link>
-        
-        <div className="flex items-center gap-4">
+          
+          <div className="flex flex-1 items-center justify-end gap-4">
+
           <Button variant="ghost" asChild className="hidden md:flex">
             <Link href="/bookings">My Bookings</Link>
           </Button>
