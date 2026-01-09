@@ -42,24 +42,35 @@ function SearchResults() {
   
   const supabase = createClient()
 
-  useEffect(() => {
-    async function fetchBuses() {
-      setLoading(true)
-      let query = supabase
-        .from("buses")
-        .select("*")
-        .ilike("source", `%${source}%`)
-        .ilike("destination", `%${destination}%`)
+    useEffect(() => {
+      async function fetchBuses() {
+        setLoading(true)
+        let query = supabase
+          .from("buses")
+          .select("*")
+          .ilike("source", `%${source}%`)
+          .ilike("destination", `%${destination}%`)
 
-      const { data, error } = await query
-      if (data) setBuses(data)
-      setLoading(false)
-    }
+        if (date) {
+          const startDate = new Date(date)
+          startDate.setHours(0, 0, 0, 0)
+          const endDate = new Date(date)
+          endDate.setHours(23, 59, 59, 999)
+          
+          query = query
+            .gte("departure_time", startDate.toISOString())
+            .lte("departure_time", endDate.toISOString())
+        }
 
-    if (source && destination) {
-      fetchBuses()
-    }
-  }, [source, destination, date])
+        const { data, error } = await query
+        if (data) setBuses(data)
+        setLoading(false)
+      }
+
+      if (source && destination) {
+        fetchBuses()
+      }
+    }, [source, destination, date])
 
   const filteredBuses = buses.filter(bus => {
     if (typeFilters.length > 0 && !typeFilters.includes(bus.type)) return false
