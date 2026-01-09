@@ -43,10 +43,38 @@ export default function Home() {
   ]
 
   const govBuses = [
-    { name: "TGSRTC", rating: "3.71", logo: "https://st.redbus.in/res/images/get_status_image/TGSRTC.png", state: "Telangana" },
-    { name: "APSRTC", rating: "3.85", logo: "https://st.redbus.in/res/images/get_status_image/APSRTC.png", state: "Andhra Pradesh" },
-    { name: "KTCL", rating: "3.83", logo: "https://st.redbus.in/res/images/get_status_image/KTCL.png", state: "Goa" },
-    { name: "RSRTC", rating: "3.62", logo: "https://st.redbus.in/res/images/get_status_image/RSRTC.png", state: "Rajasthan" },
+    { 
+      name: "TGSRTC", 
+      rating: "3.71", 
+      logo: "https://st.redbus.in/res/images/get_status_image/TGSRTC.png", 
+      subtitle: "తెలంగాణ రాష్ట్ర రోడ్డు రవాణా సంస్థ",
+      services: "1450 services including Garuda Plus, Rajdhani and more",
+      footerText: "Use code FIRST to save upto ₹250 (only for first-time users)"
+    },
+    { 
+      name: "APSRTC", 
+      rating: "3.85", 
+      logo: "https://st.redbus.in/res/images/get_status_image/APSRTC.png", 
+      subtitle: "ఆంధ్రప్రదేశ్ రాష్ట్ర రోడ్డు రవాణా సంస్థ",
+      services: "1539 services including Garuda, Garuda Plus and more",
+      footerText: "redBus is the most trusted place to book APSRTC tickets online"
+    },
+    { 
+      name: "KTCL", 
+      rating: "3.83", 
+      logo: "https://st.redbus.in/res/images/get_status_image/KTCL.png", 
+      subtitle: "कदंब येरादारी म्हामंडळ",
+      services: "60 services including Volvo Bus, AC & Non AC Bus and more",
+      footerText: "Use code FIRST to save upto ₹250 (only for first time users)"
+    },
+    { 
+      name: "KERALA RTC", 
+      rating: "3.85", 
+      logo: "https://st.redbus.in/res/images/get_status_image/KSRTC.png", 
+      subtitle: "കേരള സ്റ്റേറ്റ് റോഡ് ട്രാൻസ്പോർട്ട് കോർപ്പറേഷൻ",
+      services: "940 services including Swift, AC Multiaxle and more",
+      footerText: "redBus is the most trusted place to book KSRTC KERALA tickets online"
+    },
   ]
 
   const trendingRoutes = [
