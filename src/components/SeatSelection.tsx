@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils"
 interface SeatSelectionProps {
   busId: string
   price: number
+  travelDate: string | null
 }
 
-export function SeatSelection({ busId, price }: SeatSelectionProps) {
+export function SeatSelection({ busId, price, travelDate }: SeatSelectionProps) {
   const router = useRouter()
   const [selectedSeats, setSelectedSeats] = useState<string[]>([])
   
@@ -35,7 +36,8 @@ export function SeatSelection({ busId, price }: SeatSelectionProps) {
     const params = new URLSearchParams({
       busId,
       seats: selectedSeats.join(","),
-      total: (selectedSeats.length * price).toString()
+      total: (selectedSeats.length * price).toString(),
+      date: travelDate || ""
     })
     router.push(`/checkout?${params.toString()}`)
   }
