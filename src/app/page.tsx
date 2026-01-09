@@ -271,36 +271,58 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Government Buses - Redesigned */}
+      {/* Government Buses - Redesigned to match high-fidelity reference */}
       <section className="bg-white py-24">
         <div className="container mx-auto px-4">
-          <div className="mb-16 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <h2 className="text-3xl font-black tracking-tight mb-2">Government Bus Operators</h2>
-              <p className="text-zinc-500 font-medium">Official booking partner of state transport corporations</p>
-            </div>
-            <Button variant="ghost" className="rounded-full px-8 font-bold text-zinc-600">
-              Explore All <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
+          <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <h2 className="text-3xl font-black tracking-tight">Government Buses</h2>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {govBuses.map((gov, i) => (
-              <motion.div key={i} whileHover={{ scale: 1.05 }} className="group">
-                <Card className="h-full border-zinc-100 hover:border-red-200 transition-all cursor-pointer overflow-hidden bg-white hover:shadow-xl hover:shadow-red-500/5">
-                  <CardContent className="p-10 flex flex-col items-center text-center">
-                    <div className="h-24 w-full flex items-center justify-center mb-6">
-                      <img 
-                        src={gov.logo} 
-                        alt={gov.name} 
-                        className="h-20 object-contain grayscale group-hover:grayscale-0 transition-all duration-500" 
-                      />
+              <motion.div key={i} className="group h-full">
+                <Card className="h-full border border-zinc-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col rounded-2xl">
+                  <CardContent className="p-0 flex flex-col h-full">
+                    {/* Header */}
+                    <div className="p-6 flex items-start gap-4">
+                      <div className="h-16 w-16 flex-shrink-0">
+                        <img 
+                          src={gov.logo} 
+                          alt={gov.name} 
+                          className="h-full w-full object-contain" 
+                        />
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-black text-xl truncate">{gov.name}</h3>
+                          <div className="flex items-center gap-1 text-xs font-black text-white bg-green-700 px-2 py-0.5 rounded shadow-sm">
+                            <Star className="h-3 w-3 fill-current" />
+                            {gov.rating}
+                          </div>
+                        </div>
+                        <p className="text-zinc-500 text-sm font-medium truncate leading-tight">{gov.subtitle}</p>
+                      </div>
                     </div>
-                    <h3 className="font-black text-xl mb-1">{gov.name}</h3>
-                    <p className="text-xs font-bold text-zinc-400 mb-4 uppercase tracking-widest">{gov.state}</p>
-                    <div className="flex items-center gap-1.5 text-sm font-black text-white bg-green-500 px-3 py-1 rounded-full shadow-lg shadow-green-100">
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      {gov.rating}
+
+                    <div className="mx-6 h-px bg-zinc-100" />
+
+                    {/* Middle Section */}
+                    <div className="p-6 flex-1 flex flex-col justify-between">
+                      <p className="text-zinc-600 text-sm font-medium leading-relaxed mb-6">
+                        {gov.services}
+                      </p>
+
+                      <div className="bg-zinc-50 rounded-lg p-2 flex items-center justify-center gap-2 mb-2">
+                        <Bus className="h-3 w-3 text-red-500" />
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight">Official booking partner of {gov.name}</span>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="bg-red-50 p-4 border-t border-red-100 mt-auto">
+                      <p className="text-zinc-900 text-[11px] font-black text-center leading-normal">
+                        {gov.footerText}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
