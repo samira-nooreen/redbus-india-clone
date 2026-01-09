@@ -13,61 +13,63 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 
-function CheckoutContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const busId = searchParams.get("busId")
-  const seats = searchParams.get("seats")?.split(",") || []
-  const total = searchParams.get("total")
+  function CheckoutContent() {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const busId = searchParams.get("busId")
+    const seats = searchParams.get("seats")?.split(",") || []
+    const total = searchParams.get("total")
+    const travelDate = searchParams.get("date")
 
-  const [bus, setBus] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [bookingLoading, setBookingLoading] = useState(false)
-  const [email, setEmail] = useState("")
-  const [phone, setPhone] = useState("")
+    const [bus, setBus] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+    const [bookingLoading, setBookingLoading] = useState(false)
+    const [email, setEmail] = useState("")
+    const [phone, setPhone] = useState("")
 
-  const supabase = createClient()
+    const supabase = createClient()
 
-  useEffect(() => {
-    async function fetchBus() {
-      if (!busId) return
-      const { data, error } = await supabase
-        .from("buses")
-        .select("*")
-        .eq("id", busId)
-        .single()
+    useEffect(() => {
+      async function fetchBus() {
+        if (!busId) return
+        const { data, error } = await supabase
+          .from("buses")
+          .select("*")
+          .eq("id", busId)
+          .single()
+        
+        if (data) setBus(data)
+        setLoading(false)
+      }
+      fetchBus()
+    }, [busId])
+
+    const handleBooking = async (e: React.FormEvent) => {
+      e.preventDefault()
+      setBookingLoading(true)
+
+      // Simulate booking creation
+      const { data: { user } } = await supabase.auth.getUser()
       
-      if (data) setBus(data)
-      setLoading(false)
+      const { error } = await supabase
+        .from("bookings")
+        .insert({
+          bus_id: busId,
+          user_id: user?.id || null, // Allow guest for demo, though real app would require auth
+          seat_numbers: seats,
+          total_price: parseFloat(total || "0"),
+          booking_date: travelDate,
+          status: "confirmed"
+        })
+
+      if (error) {
+        toast.error("Booking failed. Please try again.")
+      } else {
+        toast.success("Booking successful!")
+        router.push("/bookings")
+      }
+      setBookingLoading(false)
     }
-    fetchBus()
-  }, [busId])
-
-  const handleBooking = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setBookingLoading(true)
-
-    // Simulate booking creation
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    const { error } = await supabase
-      .from("bookings")
-      .insert({
-        bus_id: busId,
-        user_id: user?.id || null, // Allow guest for demo, though real app would require auth
-        seat_numbers: seats,
-        total_price: parseFloat(total || "0"),
-        status: "confirmed"
-      })
-
-    if (error) {
-      toast.error("Booking failed. Please try again.")
-    } else {
-      toast.success("Booking successful!")
-      router.push("/bookings")
-    }
-    setBookingLoading(false)
-  }
 
   if (loading) return <div className="p-20 text-center">Loading...</div>
 
