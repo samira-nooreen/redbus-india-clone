@@ -27,11 +27,22 @@ interface BusData {
   total_seats: number
 }
 
+import { StationAutocomplete } from "@/components/StationAutocomplete"
+import { Calendar as CalendarIcon, ArrowLeftRight } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+
 function SearchResults() {
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const source = searchParams.get("source")
-  const destination = searchParams.get("destination")
-  const date = searchParams.get("date")
+  const sourceParam = searchParams.get("source") || ""
+  const destinationParam = searchParams.get("destination") || ""
+  const dateParam = searchParams.get("date") || ""
+
+  const [source, setSource] = useState(sourceParam)
+  const [destination, setDestination] = useState(destinationParam)
+  const [date, setDate] = useState<Date>(dateParam ? new Date(dateParam) : new Date())
+  const [isEditing, setIsEditing] = useState(false)
 
   const [buses, setBuses] = useState<BusData[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,35 +53,45 @@ function SearchResults() {
   
   const supabase = createClient()
 
-    useEffect(() => {
-      async function fetchBuses() {
-        setLoading(true)
-        let query = supabase
-          .from("buses")
-          .select("*")
-          .ilike("source", `%${source}%`)
-          .ilike("destination", `%${destination}%`)
+  const handleUpdateSearch = () => {
+    const params = new URLSearchParams({
+      source,
+      destination,
+      date: format(date, "yyyy-MM-dd")
+    })
+    router.push(`/search?${params.toString()}`)
+    setIsEditing(false)
+  }
 
-        if (date) {
-          const startDate = new Date(date)
-          startDate.setHours(0, 0, 0, 0)
-          const endDate = new Date(date)
-          endDate.setHours(23, 59, 59, 999)
-          
-          query = query
-            .gte("departure_time", startDate.toISOString())
-            .lte("departure_time", endDate.toISOString())
-        }
+  useEffect(() => {
+    async function fetchBuses() {
+      setLoading(true)
+      let query = supabase
+        .from("buses")
+        .select("*")
+        .ilike("source", `%${sourceParam}%`)
+        .ilike("destination", `%${destinationParam}%`)
 
-        const { data, error } = await query
-        if (data) setBuses(data)
-        setLoading(false)
+      if (dateParam) {
+        const startDate = new Date(dateParam)
+        startDate.setHours(0, 0, 0, 0)
+        const endDate = new Date(dateParam)
+        endDate.setHours(23, 59, 59, 999)
+        
+        query = query
+          .gte("departure_time", startDate.toISOString())
+          .lte("departure_time", endDate.toISOString())
       }
 
-      if (source && destination) {
-        fetchBuses()
-      }
-    }, [source, destination, date])
+      const { data, error } = await query
+      if (data) setBuses(data)
+      setLoading(false)
+    }
+
+    if (sourceParam && destinationParam) {
+      fetchBuses()
+    }
+  }, [sourceParam, destinationParam, dateParam])
 
   const filteredBuses = buses.filter(bus => {
     if (typeFilters.length > 0 && !typeFilters.includes(bus.type)) return false
@@ -89,26 +110,101 @@ function SearchResults() {
     <div className="min-h-screen bg-zinc-50 py-8 dark:bg-zinc-900">
       <div className="container mx-auto px-4">
         {/* Search Header Info */}
-        <div className="mb-8 flex flex-col items-center justify-between rounded-xl bg-white p-6 shadow-sm dark:bg-black md:flex-row">
-          <div className="flex items-center gap-6">
-            <div className="text-center md:text-left">
-              <p className="text-sm text-zinc-500 uppercase font-semibold">From</p>
-              <p className="text-xl font-bold">{source}</p>
+        <div className="mb-8 rounded-2xl bg-white p-2 shadow-sm dark:bg-black">
+          {isEditing ? (
+            <div className="flex flex-col gap-2 p-2 md:flex-row md:items-center">
+              <div className="flex-1">
+                <StationAutocomplete 
+                  placeholder="From"
+                  value={source}
+                  onChange={setSource}
+                  className="h-14"
+                />
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hidden md:flex text-zinc-300 hover:text-red-600"
+                onClick={() => {
+                  const temp = source
+                  setSource(destination)
+                  setDestination(temp)
+                }}
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+              </Button>
+              <div className="flex-1">
+                <StationAutocomplete 
+                  placeholder="To"
+                  value={destination}
+                  onChange={setDestination}
+                  className="h-14"
+                />
+              </div>
+              <div className="w-full md:w-48">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "h-14 w-full justify-start border-zinc-100 px-4 text-left font-bold",
+                        !date && "text-zinc-400"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 text-zinc-400" />
+                      {date ? format(date, "dd MMM yyyy") : <span>Date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 border-none shadow-2xl rounded-2xl" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={date}
+                      onSelect={(d) => d && setDate(d)}
+                      initialFocus
+                      disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
+                      className="rounded-2xl"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex gap-2">
+                <Button className="h-14 flex-1 bg-red-600 hover:bg-red-700 md:flex-none" onClick={handleUpdateSearch}>
+                  UPDATE
+                </Button>
+                <Button variant="ghost" className="h-14" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+              </div>
             </div>
-            <ChevronRight className="h-6 w-6 text-zinc-300" />
-            <div className="text-center md:text-left">
-              <p className="text-sm text-zinc-500 uppercase font-semibold">To</p>
-              <p className="text-xl font-bold">{destination}</p>
+          ) : (
+            <div className="flex flex-col items-center justify-between p-6 md:flex-row">
+              <div className="flex items-center gap-6">
+                <div className="text-center md:text-left">
+                  <p className="text-xs text-zinc-400 uppercase font-black tracking-widest mb-1">From</p>
+                  <p className="text-xl font-black text-zinc-900">{sourceParam}</p>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
+                  <ChevronRight className="h-5 w-5 text-red-600" />
+                </div>
+                <div className="text-center md:text-left">
+                  <p className="text-xs text-zinc-400 uppercase font-black tracking-widest mb-1">To</p>
+                  <p className="text-xl font-black text-zinc-900">{destinationParam}</p>
+                </div>
+              </div>
+              <div className="hidden h-12 w-px bg-zinc-100 md:block" />
+              <div className="mt-4 text-center md:mt-0 md:text-left">
+                <p className="text-xs text-zinc-400 uppercase font-black tracking-widest mb-1">Journey Date</p>
+                <p className="text-xl font-black text-zinc-900">{dateParam ? format(new Date(dateParam), "dd MMM yyyy") : "Any"}</p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="mt-4 md:mt-0 rounded-xl border-red-100 text-red-600 hover:bg-red-50 font-bold px-6 h-12" 
+                onClick={() => setIsEditing(true)}
+              >
+                Modify Search
+              </Button>
             </div>
-          </div>
-          <Separator orientation="vertical" className="mx-8 hidden h-10 md:block" />
-          <div className="mt-4 text-center md:mt-0 md:text-left">
-            <p className="text-sm text-zinc-500 uppercase font-semibold">Date</p>
-            <p className="text-xl font-bold">{date ? format(new Date(date), "PPP") : "Any"}</p>
-          </div>
-          <Button variant="outline" className="mt-4 md:mt-0" onClick={() => window.history.back()}>
-            Modify Search
-          </Button>
+          )}
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
