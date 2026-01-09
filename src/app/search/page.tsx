@@ -113,34 +113,36 @@ function SearchResults() {
         <div className="mb-8 rounded-2xl bg-white p-2 shadow-sm dark:bg-black">
           {isEditing ? (
             <div className="flex flex-col gap-2 p-2 md:flex-row md:items-center">
-              <div className="flex-1">
-                <StationAutocomplete 
-                  placeholder="From"
-                  value={source}
-                  onChange={setSource}
-                  className="h-14"
-                />
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="hidden md:flex text-zinc-300 hover:text-red-600"
-                onClick={() => {
-                  const temp = source
-                  setSource(destination)
-                  setDestination(temp)
-                }}
-              >
-                <ArrowLeftRight className="h-4 w-4" />
-              </Button>
-              <div className="flex-1">
-                <StationAutocomplete 
-                  placeholder="To"
-                  value={destination}
-                  onChange={setDestination}
-                  className="h-14"
-                />
-              </div>
+                <div className="flex-1">
+                  <StationAutocomplete 
+                    placeholder="From"
+                    value={source}
+                    onChange={setSource}
+                    className="h-14"
+                    variant="search"
+                  />
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="hidden md:flex text-zinc-300 hover:text-red-600"
+                  onClick={() => {
+                    const temp = source
+                    setSource(destination)
+                    setDestination(temp)
+                  }}
+                >
+                  <ArrowLeftRight className="h-4 w-4" />
+                </Button>
+                <div className="flex-1">
+                  <StationAutocomplete 
+                    placeholder="To"
+                    value={destination}
+                    onChange={setDestination}
+                    className="h-14"
+                    variant="search"
+                  />
+                </div>
               <div className="w-full md:w-48">
                 <Popover>
                   <PopoverTrigger asChild>
