@@ -1,10 +1,12 @@
+
 "use client"
 
 import { useEffect, useState, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+// ADDED useRouter here
+import { useSearchParams, useRouter } from "next/navigation" 
 import { createClient } from "@/lib/supabase"
 import { motion, AnimatePresence } from "framer-motion"
-import { Bus, Clock, MapPin, Filter, ChevronRight, Star, Ticket } from "lucide-react"
+import { Bus, Clock, MapPin, Filter, ChevronRight, Star, Ticket, Calendar as CalendarIcon, ArrowLeftRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +15,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { SeatSelection } from "@/components/SeatSelection"
 import { format } from "date-fns"
+import { StationAutocomplete } from "@/components/StationAutocomplete"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+// ADDED: Import the 'cn' utility (standard in shadcn projects)
+import { cn } from "@/lib/utils"
 
 interface BusData {
   id: string
@@ -27,13 +34,8 @@ interface BusData {
   total_seats: number
 }
 
-import { StationAutocomplete } from "@/components/StationAutocomplete"
-import { Calendar as CalendarIcon, ArrowLeftRight } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-
 function SearchResults() {
-  const router = useRouter()
+  const router = useRouter() // This now works because of the import above
   const searchParams = useSearchParams()
   const sourceParam = searchParams.get("source") || ""
   const destinationParam = searchParams.get("destination") || ""
@@ -48,7 +50,6 @@ function SearchResults() {
   const [loading, setLoading] = useState(true)
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null)
   
-  // Filters
   const [typeFilters, setTypeFilters] = useState<string[]>([])
   
   const supabase = createClient()
@@ -91,7 +92,7 @@ function SearchResults() {
     if (sourceParam && destinationParam) {
       fetchBuses()
     }
-  }, [sourceParam, destinationParam, dateParam])
+  }, [sourceParam, destinationParam, dateParam, supabase])
 
   const filteredBuses = buses.filter(bus => {
     if (typeFilters.length > 0 && !typeFilters.includes(bus.type)) return false
@@ -210,7 +211,6 @@ function SearchResults() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-          {/* Filters Sidebar */}
           <aside className="space-y-6">
             <Card>
               <CardContent className="p-6">
@@ -218,7 +218,6 @@ function SearchResults() {
                   <Filter className="h-4 w-4" />
                   Filters
                 </div>
-                
                 <div className="space-y-4">
                   <div>
                     <h4 className="mb-3 font-semibold">Bus Type</h4>
@@ -243,10 +242,8 @@ function SearchResults() {
             </Card>
           </aside>
 
-          {/* Bus List */}
           <div className="space-y-4">
             <h2 className="text-xl font-bold">{filteredBuses.length} Buses found</h2>
-            
             {filteredBuses.length === 0 ? (
               <Card className="flex h-64 flex-col items-center justify-center text-zinc-500">
                 <Bus className="mb-4 h-12 w-12 opacity-20" />
@@ -269,7 +266,6 @@ function SearchResults() {
                               4.5
                             </div>
                           </div>
-                          
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div>
@@ -285,7 +281,6 @@ function SearchResults() {
                                 <p className="text-sm text-zinc-500">{bus.destination}</p>
                               </div>
                             </div>
-                            
                             <div className="text-right">
                               <p className="text-sm text-zinc-500">Starting from</p>
                               <p className="text-2xl font-bold text-red-600">₹{bus.price}</p>
@@ -293,7 +288,6 @@ function SearchResults() {
                             </div>
                           </div>
                         </div>
-                        
                         <div className="flex items-center border-t bg-zinc-50/50 px-6 py-4 dark:bg-zinc-900/50 md:w-48 md:border-l md:border-t-0">
                           <Button 
                             className="w-full bg-red-600 hover:bg-red-700"
@@ -316,7 +310,6 @@ function SearchResults() {
                           >
                             <SeatSelection bus={bus} travelDate={date} />
                           </motion.div>
-
                       )}
                     </AnimatePresence>
                 </div>
